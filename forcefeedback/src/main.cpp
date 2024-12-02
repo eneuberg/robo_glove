@@ -3,14 +3,15 @@
 #include <SimpleKalmanFilter.h>
 
 Servo servo;
-int reboundSpeed = 1;
-int lowerBound = 0;
-int upperBound = 650;
-int feedbackAngle = 150;
 
-bool wasOutOfBounds = false;
+int lowerBound = 60;
+int upperBound = 600;
 
-float timestep = 0;
+int feedbackThreshhold = 150;
+int targetAngle = 147;
+int deadzone = 3;
+float kP = 0.7; // propotional gain
+bool feedbackActive = false;
 
 /*
  SimpleKalmanFilter(e_mea, e_est, q);
@@ -18,11 +19,15 @@ float timestep = 0;
  e_est: Estimation Uncertainty 
  q: Process Noise
 */
-SimpleKalmanFilter filter(20, 100, 10);
+SimpleKalmanFilter filter(100, 1000, 10);
+
+
+float timestep = 0;
 
 void setup() {
   Serial.begin(9600);
   pinMode(A0, INPUT);
+  //servo.attach(8);
 }
 
 void loop() 
@@ -32,31 +37,52 @@ void loop()
   Serial.println(poti);
 
   float estimate = filter.updateEstimate(poti);
-  Serial.print(">filter:");
-  Serial.println(int(floor(estimate)));
 
-  int theoreticalAngle = servo.read();
-  Serial.print(">theoreticalAngle:");
-  Serial.println(theoreticalAngle);
+  int readAngle = servo.read();
+  Serial.print(">readAngle:");
+  Serial.println(readAngle);
 
   int actualAngle = map(estimate, lowerBound, upperBound, 180, 0);
   Serial.print(">actualAngle:");
   Serial.println(actualAngle);
   
+  Serial.print(">feedbackActive:");
+  Serial.println(feedbackActive);
+
   /*
   timestep = timestep + 0.05;
 
-  int sinValue = int(floor(sin(timestep) * 90) + 90);
+  int sinValue = int(floor(sin(timestep) * 180) + 90);
   Serial.print(">sin:");
   Serial.println(sinValue);
   servo.write(sinValue);
-  
-  */
+*/
 
- 
+  if (!feedbackActive && actualAngle > feedbackThreshhold) {
+    servo.attach(8);
+    feedbackActive = true;
+  }
+
+  if (feedbackActive) {
+    float error = targetAngle - actualAngle;
+    Serial.print(">error:");
+    Serial.println(error);
+
+    
+    float adjustedAngle = actualAngle + (error * kP);
+
+    servo.write(adjustedAngle);
+
+    if (abs(error) < deadzone) {
+      servo.detach();
+      feedbackActive = false;
+    }
+  }
+
+ /*
   int isOutOfBounds = feedbackAngle - feedbackAngle;
   Serial.print(">error:");
-  Serial.println(outOfBounds);
+  Serial.println(isOutOfBounds);
 
   if (isOutOfBounds) {
     if (!wasOutOfBounds) {
@@ -72,4 +98,5 @@ void loop()
       wasOutOfBounds = false;
     }
   }
+  */
 }
