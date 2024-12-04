@@ -1,17 +1,17 @@
 #include <Arduino.h>
-#include <Servo.h>
 #include <SimpleKalmanFilter.h>
 
-Servo servo;
 
 int lowerBound = 60;
 int upperBound = 600;
 
-int feedbackThreshhold = 150;
-int targetAngle = 147;
+int feedbackThreshhold = 100;
+int targetAngle = 103;
 int deadzone = 3;
 float kP = 0.7; // propotional gain
-bool feedbackActive = false;
+
+unsigned long previousTime = 0; // To store the time of the previous reading
+int previousPoti = 0;           // To store the previous potentiometer reading
 
 /*
  SimpleKalmanFilter(e_mea, e_est, q);
@@ -22,81 +22,51 @@ bool feedbackActive = false;
 SimpleKalmanFilter filter(100, 1000, 10);
 
 
-float timestep = 0;
+int timestep = 0;
 
 void setup() {
   Serial.begin(9600);
   pinMode(A0, INPUT);
-  //servo.attach(8);
+  pinMode(9, OUTPUT);
 }
 
 void loop() 
 {
+  timestep++;
   int poti = analogRead(A0);
   Serial.print(">poti:");
   Serial.println(poti);
 
   float estimate = filter.updateEstimate(poti);
 
-  int readAngle = servo.read();
-  Serial.print(">readAngle:");
-  Serial.println(readAngle);
-
   int actualAngle = map(estimate, lowerBound, upperBound, 180, 0);
   Serial.print(">actualAngle:");
   Serial.println(actualAngle);
-  
-  Serial.print(">feedbackActive:");
-  Serial.println(feedbackActive);
 
-  /*
-  timestep = timestep + 0.05;
+  int write = (timestep % 127) * 2;
+  analogWrite(9, write);
 
-  int sinValue = int(floor(sin(timestep) * 180) + 90);
-  Serial.print(">sin:");
-  Serial.println(sinValue);
-  servo.write(sinValue);
-*/
+  Serial.print(">write:"); 
+  Serial.println(write);
 
-  if (!feedbackActive && actualAngle > feedbackThreshhold) {
-    servo.attach(8);
-    feedbackActive = true;
+  Serial.print(">timestep:");
+  Serial.println(timestep);
+
+
+  unsigned long currentTime = millis();
+  unsigned long deltaTime = currentTime - previousTime;
+  int deltaPoti = poti - previousPoti;
+
+  float velocity = 0;
+
+  if (deltaTime > 0) {
+    // Calculate the velocity (rate of change)
+    velocity = (float)deltaPoti / deltaTime; // Units: change per millisecond
   }
 
-  if (feedbackActive) {
-    float error = targetAngle - actualAngle;
-    Serial.print(">error:");
-    Serial.println(error);
+  previousTime = currentTime;
+  previousPoti = poti;
 
-    
-    float adjustedAngle = actualAngle + (error * kP);
-
-    servo.write(adjustedAngle);
-
-    if (abs(error) < deadzone) {
-      servo.detach();
-      feedbackActive = false;
-    }
-  }
-
- /*
-  int isOutOfBounds = feedbackAngle - feedbackAngle;
-  Serial.print(">error:");
-  Serial.println(isOutOfBounds);
-
-  if (isOutOfBounds) {
-    if (!wasOutOfBounds) {
-      servo.attach(8);
-      wasOutOfBounds = true;
-      servo.write(int(floor(actualAngle-reboundSpeed)));
-    }
-    //servo.write(int(floor(actualAngle-reboundSpeed)));
-  }
-  else {
-    if (wasOutOfBounds) {
-      servo.detach();
-      wasOutOfBounds = false;
-    }
-  }
-  */
+  Serial.print(">velocity:");
+  Serial.println(velocity);
 }
