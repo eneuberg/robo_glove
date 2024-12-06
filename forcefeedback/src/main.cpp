@@ -1,17 +1,6 @@
 #include <Arduino.h>
 #include <SimpleKalmanFilter.h>
-
-
-int lowerBound = 60;
-int upperBound = 600;
-
-int feedbackThreshhold = 100;
-int targetAngle = 103;
-int deadzone = 3;
-float kP = 0.7; // propotional gain
-
-unsigned long previousTime = 0; // To store the time of the previous reading
-int previousPoti = 0;           // To store the previous potentiometer reading
+#include "FeedbackFuncs.h"
 
 /*
  SimpleKalmanFilter(e_mea, e_est, q);
@@ -23,6 +12,8 @@ SimpleKalmanFilter filter(100, 1000, 10);
 
 
 int timestep = 0;
+
+void test();
 
 void setup() {
   Serial.begin(9600);
@@ -39,34 +30,30 @@ void loop()
 
   float estimate = filter.updateEstimate(poti);
 
-  int actualAngle = map(estimate, lowerBound, upperBound, 180, 0);
-  Serial.print(">actualAngle:");
-  Serial.println(actualAngle);
-
-  int write = (timestep % 127) * 2;
-  analogWrite(9, write);
-
-  Serial.print(">write:"); 
-  Serial.println(write);
-
+  int pwmValue = getFeedbackPwm(poti, 700, true);
+  Serial.print(">pwmValue:");
+  Serial.println(pwmValue);
+  analogWrite(10, pwmValue);
+  //test();
+  
   Serial.print(">timestep:");
   Serial.println(timestep);
+  
+}
 
+void test() {
+  double sinValue = sin(timestep/10.0);
+  Serial.print(">sinValue:");
+  Serial.println(sinValue);
 
-  unsigned long currentTime = millis();
-  unsigned long deltaTime = currentTime - previousTime;
-  int deltaPoti = poti - previousPoti;
+  float mapValue = mapFloat(sinValue, 0, 1, 0, 255);
+  Serial.print(">mapValue:");
+  Serial.println(mapValue);
 
-  float velocity = 0;
-
-  if (deltaTime > 0) {
-    // Calculate the velocity (rate of change)
-    velocity = (float)deltaPoti / deltaTime; // Units: change per millisecond
+  if (sinValue > 0) {
+    analogWrite(9,mapValue);
   }
-
-  previousTime = currentTime;
-  previousPoti = poti;
-
-  Serial.print(">velocity:");
-  Serial.println(velocity);
+  else {
+    analogWrite(10,abs(mapValue));
+  }
 }
