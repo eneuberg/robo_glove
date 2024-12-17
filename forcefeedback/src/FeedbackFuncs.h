@@ -36,14 +36,12 @@ float softMaterial(int unitsInFeedback) {
 }
 
 float hardMaterial(int unitsInFeedback) {
-    return normalizedFeedbackCurve((float)unitsInFeedback, 0.7, 50, 0.999);
+    return normalizedFeedbackCurve((float)unitsInFeedback, 0.4, 100, 0.999);
 }
 
 int getFeedbackPwm(int poti, int feedbackThreshhold, bool feedbackUp)  {
     bool isInFeedbackZone = (feedbackUp && poti > feedbackThreshhold) || (!feedbackUp && poti < feedbackThreshhold);
     int distanceFromThreshhold = abs(poti - feedbackThreshhold);
-    Serial.print(">distanceFromThreshhold:");
-    Serial.println(distanceFromThreshhold);
     if (!isInFeedbackZone) {
         return 0;
     }
