@@ -1,9 +1,18 @@
-#include <Arduino.h>
 #include "MotorDriver.h"
-#include "PIDController.h"
+
+/*
+SimpleKalmanFilter(e_mea, e_est, q);
+ e_mea: Measurement Uncertainty 
+ e_est: Estimation Uncertainty 
+ q: Process Noise
+ */
 
 MotorDriver::MotorDriver(int potPin, int forwardPin, int backwardPin, int thresholdValue, bool feedbackUp)
-    : potPin(potPin), forwardPin(forwardPin), backwardPin(backwardPin), pid(thresholdValue, feedbackUp)
+    : potPin(potPin), 
+    forwardPin(forwardPin), 
+    backwardPin(backwardPin), 
+    pid(thresholdValue, feedbackUp),
+    filter(12, 30, 0.03)
 {
     // Configure pins
     pinMode(potPin, INPUT);
@@ -22,12 +31,15 @@ void MotorDriver::update() {
     Serial.print(">potiValue:");
     Serial.println(potiValue);
 
+    float estimate = filter.updateEstimate(potiValue);
+    Serial.print(">estimate:");
+    Serial.println(estimate);
+
     // Get PID output
-    float pidOutput = pid.getOutput(potiValue);
+    float pidOutput = pid.getOutput(estimate);
 
-    pidOutput *= aggressiveness;
 
-    Serial.print(">pidOutputWScaling:");
+    Serial.print(">pidOutput:");
     Serial.println(pidOutput);
     
     // Drive motor based on PID output
@@ -39,8 +51,8 @@ void MotorDriver::driveMotor(float pidOutput) {
     int pwmValue = (int)abs(pidOutput);
     if (pwmValue > 255) pwmValue = 255; // Clamp max to 255
 
-    Serial.print(">pwmValue:");
-    Serial.println(pwmValue);
+    //Serial.print(">pwmValue:");
+    //Serial.println(pwmValue);
 
     if (pidOutput > 0) {
         // Forward direction: set forwardPin to PWM, backwardPin low
@@ -60,5 +72,5 @@ void MotorDriver::driveMotor(float pidOutput) {
 void MotorDriver::setAggressiveness(float factor) {
     // Ensure factor is reasonable (e.g. 0.1 to 5.0)
     if (factor < 0.0f) factor = 0.0f;
-    aggressiveness = factor;
+    pid.setKd(factor);
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "PIDController.h"
+#include <SimpleKalmanFilter.h>
 
 class MotorDriver {
 public:
@@ -7,13 +8,14 @@ public:
 
     void update();
     void setAggressiveness(float aggressiveness);
-    
+
 private:
     int potPin;
     int forwardPin;
     int backwardPin;
 
     PIDController pid;
+    SimpleKalmanFilter filter;
     
     float aggressiveness = 1.0f; // Default: no extra scaling
 
