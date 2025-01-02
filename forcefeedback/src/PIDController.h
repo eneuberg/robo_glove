@@ -1,27 +1,32 @@
 #pragma once
+#include <SimpleKalmanFilter.h>
+#include <Arduino.h>
+#include <math.h>
 
 class PIDController {
 public:
     PIDController(int threshhold, bool feedbackUp);
-    float getOutput(int potiValue);
-
+    float getOutput(float potiValue);
+    void setKd(float Kd) { this->Kd = Kd; }
 private:
     int threshhold;
     bool feedbackUp;
 
-    int lastPotiValue = 0;
-    long lastTime = 0;
-    
+    float lastPotiValue = 0;
+    unsigned long lastTime = 0;
+
+    SimpleKalmanFilter derivativeFilter;
+
     bool active = false;
 
-    const int activationOffset = 20;
+    const int activationOffset = 16;
     const int deadzone = 15;
     const float derivativeDeadzone = 0.05f;
 
-    float Kp = 0.5f; // Start with a small proportional gain
-    float Kd = 0.1f; // Start with a small derivative gain
+    float Kp = 1.2f; // Start with a small proportional gain
+    float Kd = 0.7f; // Start with a small derivative gain
 
-    float error(int potiValue);
-    float potiDerivative(int potiValue);
-    bool checkActivation(int potiValue, float err, float der);
+    float error(float potiValue);
+    float potiDerivative(float potiValue);
+    bool checkActivation(float potiValue, float err, float der);
 };
