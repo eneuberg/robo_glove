@@ -7,11 +7,11 @@ SimpleKalmanFilter(e_mea, e_est, q);
  q: Process Noise
  */
 
-MotorDriver::MotorDriver(int potPin, int forwardPin, int backwardPin, int thresholdValue, bool feedbackUp)
+MotorDriver::MotorDriver(int potPin, int forwardPin, int backwardPin, int setpoint, bool feedbackUp)
     : potPin(potPin), 
     forwardPin(forwardPin), 
     backwardPin(backwardPin), 
-    pid(thresholdValue, feedbackUp),
+    pid(setpoint, feedbackUp),
     filter(12, 30, 0.03)
 {
     // Configure pins
@@ -69,8 +69,6 @@ void MotorDriver::driveMotor(float pidOutput) {
     }
 }
 
-void MotorDriver::setAggressiveness(float factor) {
-    // Ensure factor is reasonable (e.g. 0.1 to 5.0)
-    if (factor < 0.0f) factor = 0.0f;
-    pid.setKd(factor);
+void MotorDriver::setSetpoint(int setpoint) {
+    pid.setSetpoint(setpoint);
 }

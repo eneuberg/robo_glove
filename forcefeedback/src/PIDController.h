@@ -5,11 +5,11 @@
 
 class PIDController {
 public:
-    PIDController(int threshhold, bool feedbackUp);
+    PIDController(int setpoint, bool feedbackUp);
     float getOutput(float potiValue);
-    void setKd(float Kd) { this->Kd = Kd; }
+    void setSetpoint(int setpoint) { this->setpoint = setpoint; }
 private:
-    int threshhold;
+    int setpoint;
     bool feedbackUp;
 
     float lastPotiValue = 0;

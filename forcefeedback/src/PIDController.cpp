@@ -1,8 +1,8 @@
 #include "PIDController.h"
 
 
-PIDController::PIDController(int threshhold, bool feedbackUp) 
-    : threshhold(threshhold), 
+PIDController::PIDController(int setpoint, bool feedbackUp) 
+    : setpoint(setpoint), 
     feedbackUp(feedbackUp),
     derivativeFilter(1, 3, 0.03)
 {}
@@ -14,10 +14,10 @@ float PIDController::getOutput(float potiValue) {
     float currentDerivative = potiDerivative(potiValue);
     bool currentlyActive = checkActivation(potiValue, currentError, currentDerivative);
     
-    Serial.print(">currentError:");
-    Serial.println(currentError);
-    Serial.print(">currentlyActive:");
-    Serial.println(currentlyActive);
+    //Serial.print(">currentError:");
+    //Serial.println(currentError);
+    //Serial.print(">currentlyActive:");
+    //Serial.println(currentlyActive);
 
     if (!currentlyActive) {
         // If PID is not active, return zero output
@@ -25,10 +25,10 @@ float PIDController::getOutput(float potiValue) {
     } else {
         float proportional = this->Kp * currentError;
         float derivative = this->Kd * currentDerivative;
-        Serial.print(">proportionalTerm:");
-        Serial.println(proportional);
-        Serial.print(">derivativeTerm:");
-        Serial.println(derivative);
+        //Serial.print(">proportionalTerm:");
+        //Serial.println(proportional);
+        //Serial.print(">derivativeTerm:");
+        //Serial.println(derivative);
         float output = proportional + derivative;
         return output;
     }
@@ -47,7 +47,7 @@ bool PIDController::checkActivation(float potiValue, float err, float der) {
 }
 
 float PIDController::error(float potiValue) {
-    return this->feedbackUp ? potiValue - this->threshhold : this->threshhold - potiValue;
+    return this->feedbackUp ? potiValue - this->setpoint : this->setpoint - potiValue;
 }
 
 float PIDController::potiDerivative(float potiValue) {
@@ -71,8 +71,8 @@ float PIDController::potiDerivative(float potiValue) {
     //Serial.println(scaledDerivative);
 
     float estimatedDerivative = this->derivativeFilter.updateEstimate(scaledDerivative);
-    Serial.print(">estimatedDerivative100Ms:");
-    Serial.println(estimatedDerivative);
+    //Serial.print(">estimatedDerivative100Ms:");
+    //Serial.println(estimatedDerivative);
 
     return scaledDerivative;
 }

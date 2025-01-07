@@ -4,10 +4,10 @@
 
 class MotorDriver {
 public:
-    MotorDriver(int potPin, int forwardPin, int backwardPin, int thresholdValue, bool feedbackUp);
+    MotorDriver(int potPin, int forwardPin, int backwardPin, int setpoint, bool feedbackUp);
 
     void update();
-    void setAggressiveness(float aggressiveness);
+    void setSetpoint(int setpoint);
 
 private:
     int potPin;
