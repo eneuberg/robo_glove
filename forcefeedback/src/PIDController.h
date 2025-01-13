@@ -7,9 +7,10 @@ class PIDController {
 public:
     PIDController(int setpoint, bool feedbackUp);
     float getOutput(float potiValue);
-    void setSetpoint(int setpoint) { this->setpoint = setpoint; }
+    void changeSetpoint(float delta) { this->setpoint += delta; }
+
 private:
-    int setpoint;
+    float setpoint;
     bool feedbackUp;
 
     float lastPotiValue = 0;

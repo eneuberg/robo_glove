@@ -14,10 +14,8 @@ float PIDController::getOutput(float potiValue) {
     float currentDerivative = potiDerivative(potiValue);
     bool currentlyActive = checkActivation(potiValue, currentError, currentDerivative);
     
-    //Serial.print(">currentError:");
-    //Serial.println(currentError);
-    //Serial.print(">currentlyActive:");
-    //Serial.println(currentlyActive);
+    Serial.print(">setpoint:");
+    Serial.println(this->setpoint);
 
     if (!currentlyActive) {
         // If PID is not active, return zero output
@@ -40,7 +38,7 @@ bool PIDController::checkActivation(float potiValue, float err, float der) {
             this->active = false;
         }
     }
-    else if (err > this->activationOffset)   {
+    else if (abs(err) > this->activationOffset)   {
         this->active = true;
     }
     return this->active;

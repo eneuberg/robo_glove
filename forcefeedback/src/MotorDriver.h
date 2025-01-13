@@ -7,7 +7,6 @@ public:
     MotorDriver(int potPin, int forwardPin, int backwardPin, int setpoint, bool feedbackUp);
 
     void update();
-    void setSetpoint(int setpoint);
 
 private:
     int potPin;
@@ -16,9 +15,8 @@ private:
 
     PIDController pid;
     SimpleKalmanFilter filter;
-    
-    float aggressiveness = 1.0f; // Default: no extra scaling
 
     // Helper function to drive motor based on PID output
+    void dither();
     void driveMotor(float pidOutput);
 };
