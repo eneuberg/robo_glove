@@ -4,7 +4,7 @@
 PIDController::PIDController(int setpoint, bool feedbackUp) 
     : setpoint(setpoint), 
     feedbackUp(feedbackUp),
-    derivativeFilter(1, 3, 0.03)
+    derivativeFilter(3, 1, 0.2)
 {}
 
 
@@ -16,6 +16,12 @@ float PIDController::getOutput(float potiValue) {
     
     Serial.print(">setpoint:");
     Serial.println(this->setpoint);
+
+    //Serial.print(">currentlyActive:");
+    //Serial.println(currentlyActive);
+
+    //Serial.print(">currentError:");
+    //Serial.println(currentError);
 
     if (!currentlyActive) {
         // If PID is not active, return zero output
@@ -64,11 +70,11 @@ float PIDController::potiDerivative(float potiValue) {
     //Serial.print(">currentDerivative:");
     //Serial.println(derivative);
 
-    float scaledDerivative = derivative * 100; // 100 ms
-    //Serial.print(">scaledDerivative100Ms:");
+    float scaledDerivative = derivative * 100;
+    //Serial.print(">scaledDerivative:");
     //Serial.println(scaledDerivative);
 
-    float estimatedDerivative = this->derivativeFilter.updateEstimate(scaledDerivative);
+    //float estimatedDerivative = this->derivativeFilter.updateEstimate(scaledDerivative);
     //Serial.print(">estimatedDerivative100Ms:");
     //Serial.println(estimatedDerivative);
 

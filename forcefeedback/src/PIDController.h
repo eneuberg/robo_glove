@@ -20,12 +20,12 @@ private:
 
     bool active = false;
 
-    const int activationOffset = 16;
-    const int deadzone = 15;
+    const int activationOffset = 50;
+    const int deadzone = 40;
     const float derivativeDeadzone = 0.05f;
 
-    float Kp = 1.2f; // Start with a small proportional gain
-    float Kd = 0.7f; // Start with a small derivative gain
+    float Kp = 1.4f; // Start with a small proportional gain
+    float Kd = 1.0f; // Start with a small derivative gain
 
     float error(float potiValue);
     float potiDerivative(float potiValue);
