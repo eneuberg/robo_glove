@@ -3,11 +3,11 @@
 #include <math.h>
 #include <Arduino.h>
 
-float mapFloat(float x, float in_min, float in_max, float out_min, float out_max) {
+inline float mapFloat(float x, float in_min, float in_max, float out_min, float out_max) {
     return out_min + ((x - in_min) * (out_max - out_min)) / (in_max - in_min);
 }
 
-double sawtooth(double t, double period, double amplitude) {
+inline double sawtooth(double t, double period, double amplitude) {
     if (period <= 0) {
         return 0.0; // Avoid division by zero
     }
@@ -22,7 +22,7 @@ double sawtooth(double t, double period, double amplitude) {
     return amplitude * (2.0 * (fractionalPart / period) - 1.0);
 }
 
-double sineWave(double t, double period, double amplitude) {
+inline double sineWave(double t, double period, double amplitude) {
     if (period <= 0) {
         return 0.0; // Avoid division by zero
     }
@@ -32,4 +32,10 @@ double sineWave(double t, double period, double amplitude) {
 
     // Evaluate sine wave
     return amplitude * sin(omega * t);
+}
+
+inline int intClamp(int x, int min, int max) {
+    if (x < min) return min;
+    if (x > max) return max;
+    return x;
 }

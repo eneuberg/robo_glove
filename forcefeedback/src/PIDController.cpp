@@ -9,7 +9,7 @@ PIDController::PIDController(int setpoint, bool feedbackUp)
 
 
 float PIDController::getOutput(float potiValue) {
-    // First, determine if PID is active
+
     float currentError = error(potiValue);
     float currentDerivative = potiDerivative(potiValue);
     bool currentlyActive = checkActivation(potiValue, currentError, currentDerivative);
@@ -25,10 +25,16 @@ float PIDController::getOutput(float potiValue) {
 
     if (!currentlyActive) {
         // If PID is not active, return zero output
+        integralSum = 0.0f;
         return 0.0f;
     } else {
+        integralSum += currentError;
+        integralSum = constrain(integralSum, -integralLimit, integralLimit);
         float proportional = this->Kp * currentError;
         float derivative = this->Kd * currentDerivative;
+        float integral = this->Ki * integralSum;
+        //Serial.print(">integral:");
+        //Serial.println(integral);
         //Serial.print(">proportionalTerm:");
         //Serial.println(proportional);
         //Serial.print(">derivativeTerm:");
@@ -80,3 +86,4 @@ float PIDController::potiDerivative(float potiValue) {
 
     return scaledDerivative;
 }
+

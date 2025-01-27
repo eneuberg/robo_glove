@@ -27,6 +27,10 @@ private:
     float Kp = 1.4f; // Start with a small proportional gain
     float Kd = 1.0f; // Start with a small derivative gain
 
+    float Ki = 0.01f;               // Integral gain (start small and tune)
+    float integralSum = 0.0f;       // Stores the accumulated error
+    const float integralLimit = 25000.0f; // Anti-windup limit for the integral term
+
     float error(float potiValue);
     float potiDerivative(float potiValue);
     bool checkActivation(float potiValue, float err, float der);

@@ -1,27 +1,27 @@
 #pragma once
 #include "PIDController.h"
 #include <SimpleKalmanFilter.h>
-//#include "HelperFuncs.h"
+#include "HelperFuncs.h"
 
 typedef uint32_t msInterval;
 
-class MotorDriver {
+class MotorDriver
+{
 public:
-    MotorDriver(int potPin, int forwardPin, int backwardPin, int setpoint, bool feedbackUp);
+    MotorDriver(String fingerName, int potPin, int forwardPin, int backwardPin, int setpoint, bool feedbackUp);
 
-    void begin();
     void dither();
     void pid();
-    void handleSerial();
+    void mapToSetpoint(float gripperValue);
+    float getCurrentPid() { return currentPid; }
+    void calibrate();
 
 private:
+    String name;
+
     int potPin;
     int forwardPin;
     int backwardPin;
-
-    msInterval ditherInterval;
-    msInterval pidInterval;
-    msInterval serialInterval;
 
     int currentPid = 0;
     int currentDither = 0;
@@ -29,19 +29,14 @@ private:
     PIDController pidController;
     SimpleKalmanFilter filter;
 
-    String serialBuffer;
+    
     float gripperMin = 37.0f;
     float gripperMax = 0.0f;
 
-    int fingerMin = 1600;
-    int fingerMax = 2400;
+    int fingerMin = 1000; 
+    int fingerMax = 500;
 
     void driveMotor();
-    void mapGripperToSetpoint(String serialLine);
-    void calibrate();
+    float readAndFilter();
 
-    static void taskRunner(void* pvParameters);
-
-    //for testing
-    float testGripperValue = 25.0f;
 };
