@@ -14,8 +14,8 @@ float PIDController::getOutput(float potiValue) {
     float currentDerivative = potiDerivative(potiValue);
     bool currentlyActive = checkActivation(potiValue, currentError, currentDerivative);
     
-    Serial.print(">setpoint:");
-    Serial.println(this->setpoint);
+    //Serial.print(">setpoint:");
+    //Serial.println(this->setpoint);
 
     //Serial.print(">currentlyActive:");
     //Serial.println(currentlyActive);
@@ -63,8 +63,8 @@ float PIDController::potiDerivative(float potiValue) {
 
     //Serial.print(">deltaPoti:");
     //Serial.println(deltaPoti);
-    Serial.print(">deltaTimeMillis:");
-    Serial.println(deltaTime); 
+    //Serial.print(">deltaTimeMillis:");
+    //Serial.println(deltaTime); 
 
     float derivative = static_cast<float>(deltaPoti) / static_cast<float>(deltaTime);
     //Serial.print(">currentDerivative:");

@@ -1,6 +1,9 @@
 #pragma once
 #include "PIDController.h"
 #include <SimpleKalmanFilter.h>
+//#include "HelperFuncs.h"
+
+typedef uint32_t msInterval;
 
 class MotorDriver {
 public:
@@ -8,24 +11,37 @@ public:
 
     void begin();
     void dither();
-    void drivePID();
+    void pid();
+    void handleSerial();
 
 private:
     int potPin;
     int forwardPin;
     int backwardPin;
 
-    int ditherInterval;
-    int pidInterval;
+    msInterval ditherInterval;
+    msInterval pidInterval;
+    msInterval serialInterval;
 
-    int currentPWM = 0;
+    int currentPid = 0;
+    int currentDither = 0;
 
-    PIDController pid;
+    PIDController pidController;
     SimpleKalmanFilter filter;
 
-    // Helper function to drive motor based on PID output
-    static void ditherTask(void *pvParameters);
-    static void pidTask(void *pvParameters);
+    String serialBuffer;
+    float gripperMin = 37.0f;
+    float gripperMax = 0.0f;
 
-    void driveMotor(int pwmValue);
+    int fingerMin = 1600;
+    int fingerMax = 2400;
+
+    void driveMotor();
+    void mapGripperToSetpoint(String serialLine);
+    void calibrate();
+
+    static void taskRunner(void* pvParameters);
+
+    //for testing
+    float testGripperValue = 25.0f;
 };

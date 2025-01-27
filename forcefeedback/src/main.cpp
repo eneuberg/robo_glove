@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include "HelperFuncs.h"
 #include "MotorDriver.h"
 
 MotorDriver motorDriver(34, 14, 12, 1400, true);
