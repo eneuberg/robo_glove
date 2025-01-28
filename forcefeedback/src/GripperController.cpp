@@ -2,8 +2,7 @@
 
 
 struct MotorTaskParams {
-    MotorDriver** instances;        // Array of MotorDriver pointers
-    size_t instanceCount;           // Number of MotorDriver objects
+    MotorDriver* instance;        // Array of MotorDriver pointers
     msInterval interval;            // Interval in milliseconds
     void (*callback)(MotorDriver*); // Specific callback for MotorDriver
     const char* taskName;           // Optional: Task name for debugging
@@ -26,22 +25,33 @@ GripperController::GripperController()
 {}
 
 void GripperController::begin()  {
-    MotorDriver* driverList[] = {&index, &thumb};
     
-    static MotorTaskParams ditherParams = {
-        .instances = driverList,
-        .instanceCount = sizeof(driverList) / sizeof(driverList[0]),
+    static MotorTaskParams indexDitherParams = {
+        .instance = &index,  
         .interval = ditherInterval,
         .callback = [](MotorDriver* driver) { driver->dither(); },
-        .taskName = "MotorTask"
+        .taskName = "indexMotorTask"
     };
 
-    static MotorTaskParams pidParams = {
-        .instances = driverList,
-        .instanceCount = sizeof(driverList) / sizeof(driverList[0]),
+    static MotorTaskParams indexPidParams = {
+        .instance = &index,
         .interval = pidInterval,
         .callback = [](MotorDriver* driver) { driver->pid(); },
-        .taskName = "PIDTask"
+        .taskName = "indexPIDTask"
+    };
+
+    static MotorTaskParams thumbDitherParams = {
+        .instance = &thumb,
+        .interval = ditherInterval,
+        .callback = [](MotorDriver* driver) { driver->dither(); },
+        .taskName = "thumbMotorTask"
+    };
+
+    static MotorTaskParams thumbPidParams = {
+        .instance = &thumb,
+        .interval = pidInterval,
+        .callback = [](MotorDriver* driver) { driver->pid(); },
+        .taskName = "thumbPIDTask"
     };
 
     static ControllerTaskParams controllerParams = {
@@ -51,11 +61,11 @@ void GripperController::begin()  {
         .taskName = "ControllerTask"
     };
 
-    xTaskCreate(motorTaskRunner, ditherParams.taskName, 2048, &ditherParams, 1, nullptr);
-    //xTaskCreate(motorTaskRunner, pidParams.taskName, 8192, &pidParams, 3, nullptr);
+    //xTaskCreate(motorTaskRunner, indexDitherParams.taskName, 4048, &indexDitherParams, 1, nullptr);
+    xTaskCreate(motorTaskRunner, indexPidParams.taskName, 4048, &indexPidParams, 1, nullptr);
+    //xTaskCreate(motorTaskRunner, thumbDitherParams.taskName, 2048, &thumbDitherParams, 1, nullptr);
+    //xTaskCreate(motorTaskRunner, thumbPidParams.taskName, 2048, &thumbPidParams, 1, nullptr);
     //xTaskCreate(controllerTaskRunner, controllerParams.taskName, 2048, &controllerParams, 2, nullptr);
-    
-
 }
 
 void GripperController::update() {
@@ -104,33 +114,30 @@ void GripperController::motorTaskRunner(void* pvParameters) {
     // Cast the parameters to the MotorTaskParams structure
     MotorTaskParams* params = static_cast<MotorTaskParams*>(pvParameters);
 
-    MotorDriver** drivers = params->instances;  // Array of MotorDriver objects
-    size_t driverCount = params->instanceCount; // Number of MotorDriver objects
+    MotorDriver* driver = params->instance;  // Array of MotorDriver objects
     TickType_t period = pdMS_TO_TICKS(params->interval); // Interval as ticks
     TickType_t xLastWakeTime = xTaskGetTickCount();
 
     for (;;) {
-        for (size_t i = 0; i < driverCount; ++i) {
-            if (drivers[i] != nullptr) {
-                params->callback(drivers[i]); // Call the callback for each driver
-            }
+        if (driver != nullptr) {
+            params->callback(driver); 
         }
 
         if (params->taskName != nullptr) {
-            //UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(nullptr);
-            //Serial.print(">");
-            //Serial.print(params->taskName);
-            //Serial.print("Mark:");
-            //Serial.println(stackHighWaterMark);
+            UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(nullptr);
+            Serial.print(">");
+            Serial.print(params->taskName);
+            Serial.print("Mark:");
+            Serial.println(stackHighWaterMark);
         }
 
         BaseType_t xWasDelayed = xTaskDelayUntil(&xLastWakeTime, period);
 
         if (xWasDelayed == pdFALSE && params->taskName != nullptr) {
             // Optional: Debugging for missed deadlines
-            // Serial.print(">");
-            // Serial.print(params->taskName);
-            // Serial.println("TaskMiss:1");
+            Serial.print(">");
+            Serial.print(params->taskName);
+            Serial.println("TaskMiss:1");
         }
     }
 }

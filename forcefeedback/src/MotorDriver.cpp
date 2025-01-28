@@ -30,29 +30,37 @@ MotorDriver::MotorDriver(String fingerName, int potPin, int forwardPin, int back
     Serial.print(name);
     Serial.print(">potPin:");
     Serial.println(potPin);
+    Serial.print(">forwardPin:");
+    Serial.println(forwardPin);
+    Serial.print(">backwardPin:");
+    Serial.println(backwardPin);
+    Serial.print(">setpoint:");
+    Serial.println(setpoint);
 }
 
 float MotorDriver::readAndFilter() {
+    Serial.print(">potPin:");
+    Serial.println(potPin);
     int potiValue = analogRead(potPin);
-    float estimate = filter.updateEstimate(potiValue);
-    return estimate;
+    //float estimate = filter.updateEstimate(potiValue);
+    return potiValue;
 }
 
 void MotorDriver::pid() {
     float estimate = readAndFilter();
     Serial.print(">");
     //Serial.print(name);
-    Serial.print("Estimate:");
+    Serial.print("Estimatee:");
     Serial.println(estimate);
 
-    float pidOutput = pidController.getOutput(estimate);
+    //float pidOutput = pidController.getOutput(estimate);
     //Serial.print(">pidOutput:");
     //Serial.println(pidOutput);
 
     float factor = 2.0f;
-    currentPid = (int)(pidOutput * factor); 
+    //currentPid = (int)(pidOutput * factor); 
 
-    driveMotor();
+    //driveMotor();
 }
 
 void MotorDriver::dither() {
@@ -69,7 +77,7 @@ void MotorDriver::dither() {
     //Serial.print(">ditherPWM:");
     //Serial.println(pwmValue);
 
-    driveMotor();
+    //driveMotor();
 }
 
 void MotorDriver::driveMotor() {
