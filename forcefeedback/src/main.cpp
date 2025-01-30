@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "GripperController.h"
 
+GripperController controller;
 
 void setup() {
   Serial.begin(115200);
@@ -8,7 +9,6 @@ void setup() {
   while(!Serial) {
         delay(100);
     }
-  GripperController controller;
   //pinMode(35, INPUT);
   //pinMode(34, INPUT);
   controller.calibrate();
