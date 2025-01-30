@@ -17,9 +17,9 @@ class GripperController
 
         MotorDriver thumb;
         MotorDriver index;
-        //MotorDriver middle;
-        //MotorDriver ring;
-        //MotorDriver pinky;
+        MotorDriver middle;
+        MotorDriver ring;
+        MotorDriver pinky;
 
         msInterval ditherInterval;
         msInterval pidInterval;
@@ -28,9 +28,6 @@ class GripperController
         String serialBuffer;
 
         void update();
-
-        static void motorTaskRunner(void* pvParameters);
-        static void controllerTaskRunner(void* pvParameters);
     	
         float currentGripperValue = 25.0f;
 
