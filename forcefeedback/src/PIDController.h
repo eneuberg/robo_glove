@@ -24,11 +24,11 @@ private:
     const int deadzone = 40;
     const float derivativeDeadzone = 0.05f;
 
-    float Kp = 1.4f; // Start with a small proportional gain
-    float Kd = 1.0f; // Start with a small derivative gain
+    float Kp = 1.4f; 
+    float Kd = 1.0f; 
 
-    float Ki = 0.01f;               // Integral gain (start small and tune)
-    float integralSum = 0.0f;       // Stores the accumulated error
+    float Ki = 0.01f;               
+    float integralSum = 0.0f;     
     const float integralLimit = 25000.0f; // Anti-windup limit for the integral term
 
     float error(float potiValue);

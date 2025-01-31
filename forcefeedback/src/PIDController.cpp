@@ -13,18 +13,8 @@ float PIDController::getOutput(float potiValue) {
     float currentError = error(potiValue);
     float currentDerivative = potiDerivative(potiValue);
     bool currentlyActive = checkActivation(potiValue, currentError, currentDerivative);
-    
-    //Serial.print(">setpoint:");
-    //Serial.println(this->setpoint);
-
-    //Serial.print(">currentlyActive:");
-    //Serial.println(currentlyActive);
-
-    //Serial.print(">currentError:");
-    //Serial.println(currentError);
 
     if (!currentlyActive) {
-        // If PID is not active, return zero output
         integralSum = 0.0f;
         return 0.0f;
     } else {
@@ -33,12 +23,6 @@ float PIDController::getOutput(float potiValue) {
         float proportional = this->Kp * currentError;
         float derivative = this->Kd * currentDerivative;
         float integral = this->Ki * integralSum;
-        //Serial.print(">integral:");
-        //Serial.println(integral);
-        //Serial.print(">proportionalTerm:");
-        //Serial.println(proportional);
-        //Serial.print(">derivativeTerm:");
-        //Serial.println(derivative);
         float output = proportional + derivative;
         return output;
     }
@@ -66,23 +50,9 @@ float PIDController::potiDerivative(float potiValue) {
     float deltaPoti = potiValue - this->lastPotiValue;
     this->lastPotiValue = potiValue;
     this->lastTime = currentTime;
-
-    //Serial.print(">deltaPoti:");
-    //Serial.println(deltaPoti);
-    //Serial.print(">deltaTimeMillis:");
-    //Serial.println(deltaTime); 
-
+    
     float derivative = static_cast<float>(deltaPoti) / static_cast<float>(deltaTime);
-    //Serial.print(">currentDerivative:");
-    //Serial.println(derivative);
-
     float scaledDerivative = derivative * 100;
-    //Serial.print(">scaledDerivative:");
-    //Serial.println(scaledDerivative);
-
-    //float estimatedDerivative = this->derivativeFilter.updateEstimate(scaledDerivative);
-    //Serial.print(">estimatedDerivative100Ms:");
-    //Serial.println(estimatedDerivative);
 
     return scaledDerivative;
 }
