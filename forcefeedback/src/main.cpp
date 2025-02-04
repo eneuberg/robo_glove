@@ -1,7 +1,8 @@
 #include <Arduino.h>
 #include "GripperController.h"
+#include "TestFuncs.h"
 
-GripperController controller;
+//GripperController controller;
 
 void setup() {
   Serial.begin(115200);
@@ -9,22 +10,12 @@ void setup() {
   while(!Serial) {
         delay(100);
     }
-  //pinMode(35, INPUT);
-  //pinMode(34, INPUT);
-  controller.calibrate();
-  controller.begin();
+  //controller.calibrate();
+  //controller.begin();
 }
 
 void loop() 
 {
-  
-  //int value = analogRead(35);
-  //Serial.print(">value:");
-  //Serial.println(value);
-  //int value2 = analogRead(34);
-  //Serial.print(">value2:");
-  //Serial.println(value2);
-  
-  //Serial.print(">timeTaken:");
-  //Serial.println(micros() - currentMicros);
+  testMotor();
+  testPoti();
 }
