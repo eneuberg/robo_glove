@@ -95,7 +95,19 @@ void MotorDriver::mapToSetpoint(float gripperValue)   {
     pidController.setSetpoint(setpoint);
 }
 
-void MotorDriver::setSinusoidalSetpoint(float sinValue) {
-    float setpoint = mapFloat(sinValue, -1.0f, 1.0f, fingerMin, fingerMax);
+void MotorDriver::updateSinusoidalSetpoint(int motorIndex, int motorCount) {
+    const unsigned long period = 5000;
+    const float spatialSpan = 1.0;
+    float basePhase = (millis() % period) / float(period) * 2.0 * PI;
+  
+    float offset = 0.0;
+    if (motorIndex == 0)    {
+        offset = (motorIndex / float(motorCount - 1)) * spatialSpan * PI;
+    }
+
+    float totalPhase = basePhase + offset;
+    float sinVal = sin(totalPhase);
+
+    float setpoint = mapFloat(sinVal, -1.0f, 1.0f, fingerMin, fingerMax);
     pidController.setSetpoint(setpoint);
 }

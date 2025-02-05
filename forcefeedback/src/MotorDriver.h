@@ -21,8 +21,9 @@ public:
     int getFingerMin() { return fingerMin; }
     int getFingerMax() { return fingerMax; }
     float getEstimate() { return currentEstimate; }
-
-    void setSinusoidalSetpoint(float sinValue);
+    int getSetpoint() { return pidController.getSetpoint(); }
+    
+    void updateSinusoidalSetpoint(int motorIndex, int motorCount);
 
 private:
     String name;

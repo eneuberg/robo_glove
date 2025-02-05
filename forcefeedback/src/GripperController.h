@@ -21,8 +21,8 @@ class GripperController
         MotorDriver ring;
         MotorDriver pinky;
 
-        static constexpr size_t motorCount = 3;
-        MotorDriver* motors[motorCount] = { &index, &middle, &ring };
+        static constexpr size_t motorCount = 4;
+        MotorDriver* motors[motorCount] = { &index, &middle, &ring, &pinky };
 
         msInterval ditherInterval;
         msInterval pidInterval;

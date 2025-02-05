@@ -2,7 +2,7 @@
 #include "GripperController.h"
 #include "TestFuncs.h"
 
-//GripperController controller;
+GripperController controller;
 
 
 void setup() {
@@ -11,9 +11,9 @@ void setup() {
   while(!Serial) {
         delay(100);
     }
-    testBitPackedQueue12();
-  //controller.calibrate();
-  //controller.begin();
+    //testBitPackedQueue12();
+  controller.calibrate();
+  controller.begin();
 }
 
 void loop() 
