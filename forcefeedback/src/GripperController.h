@@ -15,11 +15,14 @@ class GripperController
 
     private:
 
-        MotorDriver thumb;
+        //MotorDriver thumb;
         MotorDriver index;
         MotorDriver middle;
         MotorDriver ring;
         MotorDriver pinky;
+
+        static constexpr size_t motorCount = 3;
+        MotorDriver* motors[motorCount] = { &index, &middle, &ring };
 
         msInterval ditherInterval;
         msInterval pidInterval;

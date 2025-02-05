@@ -10,11 +10,19 @@ class MotorDriver
 public:
     MotorDriver(String fingerName, int potPin, int forwardPin, int backwardPin, int setpoint, bool feedbackUp);
 
+    void begin();
     void dither();
     void pid();
     void mapToSetpoint(float gripperValue);
     float getCurrentPid() { return currentPid; }
+    String getName() { return name; }
     void calibrate();
+
+    int getFingerMin() { return fingerMin; }
+    int getFingerMax() { return fingerMax; }
+    float getEstimate() { return currentEstimate; }
+
+    void setSinusoidalSetpoint(float sinValue);
 
 private:
     String name;
@@ -26,6 +34,8 @@ private:
     int currentPid = 0;
     int currentDither = 0;
 
+    float currentEstimate = 0;
+
     PIDController pidController;
     SimpleKalmanFilter filter;
 
@@ -33,8 +43,8 @@ private:
     float gripperMin = 37.0f;
     float gripperMax = 0.0f;
 
-    int fingerMin = 1000; 
-    int fingerMax = 500;
+    int fingerMin = 10000; 
+    int fingerMax = 1;
 
     void driveMotor();
     float readAndFilter();

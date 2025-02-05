@@ -2,7 +2,7 @@
 #include "GripperController.h"
 #include "TestFuncs.h"
 
-//GripperController controller;
+GripperController controller;
 
 void setup() {
   Serial.begin(115200);
@@ -10,12 +10,12 @@ void setup() {
   while(!Serial) {
         delay(100);
     }
-  //controller.calibrate();
-  //controller.begin();
+  controller.calibrate();
+  controller.begin();
 }
 
 void loop() 
 {
-  testMotor();
-  testPoti();
+  //testMotor();
+  //testPoti();
 }

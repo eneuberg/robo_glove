@@ -44,20 +44,20 @@ void taskRunner(void* pvParameters)
             Serial.println("TaskMiss:1");
         }
         else {
-            Serial.print(">");
-            Serial.print(params->taskName);
-            Serial.println("TaskMiss:0");
+            //Serial.print(">");
+            //Serial.print(params->taskName);
+            //Serial.println("TaskMiss:0");
         }
     }
 }
 
 
 GripperController::GripperController() 
-    : index("index", 34, 14, 12, 1400, true),
-    thumb("thumb", 35, 4, 2, 1400, true),
-    middle("middle", 32, 27, 25, 1400, true),
-    ring("ring", 33, 26, 13, 1400, true),
-    pinky("pinky", 25, 33, 15, 1400, true),
+    : index("index", 36, 32, 33, 1400, true),
+    //thumb("thumb", 35, 4, 2, 1400, true),
+    middle("middle", 39, 4, 16, 1400, true),
+    ring("ring", 34, 18, 19, 1400, true),
+    pinky("pinky", 13, 5, 17, 1400, true),
     ditherInterval(100000),
     pidInterval(10),
     updateInterval(50)
@@ -65,7 +65,17 @@ GripperController::GripperController()
 
 void GripperController::begin()  {
     
-    static MotorDriver* motors[] = { &index, &thumb, &middle, &ring, &pinky };
+    for (int i = 0; i < motorCount; i++) {
+        motors[i]->begin();
+        Serial.print(">");
+        Serial.print(motors[i]->getName());
+        Serial.print("Range:");
+        Serial.println(motors[i]->getFingerMin());
+        Serial.print(">");
+        Serial.print(motors[i]->getName());
+        Serial.print("Range:");
+        Serial.println(motors[i]->getFingerMax());
+    }
 
     static TaskParams<MotorDriver> pidMotorParams = {
         .instances = motors,
@@ -73,6 +83,16 @@ void GripperController::begin()  {
         .interval = pidInterval,
         .callback = [](MotorDriver* md) { md->pid(); },
         .taskName = "PidMotorTask"
+    };
+
+    static GripperController* controller[] = { this };
+
+    static TaskParams<GripperController> updateParams = {
+        .instances = controller,
+        .instanceCount = 1,
+        .interval = updateInterval,
+        .callback = [](GripperController* gc) { gc->update(); },
+        .taskName = "UpdateTask"
     };
 
     xTaskCreatePinnedToCore(
@@ -85,9 +105,20 @@ void GripperController::begin()  {
         1 // Pin to core 1
     );
 
+    xTaskCreatePinnedToCore(
+        taskRunner<GripperController>,
+        updateParams.taskName, 
+        4048, 
+        &updateParams, 
+        1, 
+        nullptr, 
+        0 // Pin to core 0
+    );
+
 }
 
 void GripperController::update() {
+    /*
     while (Serial.available() > 0) {
         char incomingChar = Serial.read();
         if (incomingChar == '\n') {
@@ -100,25 +131,54 @@ void GripperController::update() {
 
     index.mapToSetpoint(currentGripperValue);
     thumb.mapToSetpoint(currentGripperValue);
+    
+    */
+    const unsigned long period = 5000;
+    float basePhase = (millis() % period) / float(period); // normalized phase [0,1)
 
-    float indexPid = index.getCurrentPid();
-    float thumbPid = thumb.getCurrentPid();
+    Serial.print(">basePhase:");
+    Serial.println(basePhase);
+    
+    float pidValues[motorCount];
+    for (int i = 0; i < motorCount; i++) {
+        // Calculate the phase offset for this motor.
+        // If there is more than one motor, map i from 0 -> motorCount-1 to 0 -> 0.5 (half a cycle).
+        float offset = (motorCount > 1) ? (i / float(motorCount - 1)) * 0.5 : 0.0;
 
-    bool indexBiggest = abs(indexPid) > abs(thumbPid);
-    float currentPid = indexBiggest ? indexPid : thumbPid;
+        // Compute the motor's specific phase and corresponding sine value.
+        float motorPhase = basePhase + offset;
+        float motorSinValue = sin(2 * PI * motorPhase);
 
-    Serial.print(">currentPid:");
-    Serial.println(currentPid);
+        // Store or log the PID value if needed.
+        float pidValue = motors[i]->getCurrentPid();
+        pidValues[i] = pidValue;
+
+        Serial.print(">");
+        Serial.print(motors[i]->getName());
+        Serial.print(" CurrentEstimate: ");
+        Serial.println(motors[i]->getEstimate());
+
+        Serial.print(">");
+        Serial.print(motors[i]->getName());
+        Serial.print(" CurrentPid: ");
+        Serial.println(pidValue);
+
+        // Set the sinusoidal setpoint for this motor with its unique phase offset.
+        motors[i]->setSinusoidalSetpoint(motorSinValue);
+    }
 }
 
 void GripperController::calibrate() {
-    pinMode(26, INPUT_PULLUP);
-    pinMode(27, OUTPUT);
-    digitalWrite(27, HIGH);
+    int buttonPin = 14;
+    int ledPin = 12;
+    pinMode(buttonPin, INPUT_PULLUP);
+    pinMode(ledPin, OUTPUT);
+    digitalWrite(ledPin, HIGH);
     while (true) {
-        index.calibrate();
-        thumb.calibrate();
-        int button = digitalRead(26);
+        for (int i = 0; i < motorCount; i++) {
+            motors[i]->calibrate();
+        }
+        int button = digitalRead(buttonPin);
         Serial.print(">button1:");
         Serial.println(button);
         if (button == LOW) {
@@ -126,5 +186,5 @@ void GripperController::calibrate() {
         }
         delay(100);
     }
-    digitalWrite(27, LOW);
+    digitalWrite(ledPin, LOW);
 }

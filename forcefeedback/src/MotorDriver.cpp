@@ -30,10 +30,15 @@ MotorDriver::MotorDriver(String fingerName, int potPin, int forwardPin, int back
     Serial.println(setpoint);
 }
 
+void MotorDriver::begin() {
+    pidController.setSetpoint((fingerMin + fingerMax) / 2);
+}
+
 float MotorDriver::readAndFilter() {
     int potiValue = analogRead(potPin);
     int currentTick = micros();
     float estimate = filter.updateEstimate(potiValue);
+    currentEstimate = estimate;
     return potiValue;
 }
 
@@ -87,5 +92,10 @@ void MotorDriver::calibrate()   {
 
 void MotorDriver::mapToSetpoint(float gripperValue)   {
     float setpoint = mapFloat(gripperValue, gripperMin, gripperMax, fingerMin, fingerMax);
+    pidController.setSetpoint(setpoint);
+}
+
+void MotorDriver::setSinusoidalSetpoint(float sinValue) {
+    float setpoint = mapFloat(sinValue, -1.0f, 1.0f, fingerMin, fingerMax);
     pidController.setSetpoint(setpoint);
 }
