@@ -1,11 +1,11 @@
 #include "MotorDriver.h"
 
-MotorDriver::MotorDriver(String fingerName, int potPin, int forwardPin, int backwardPin, int setpoint, bool feedbackUp)
+MotorDriver::MotorDriver(String fingerName, int potPin, int forwardPin, int backwardPin, bool feedbackUp)
     : name(fingerName),
     potPin(potPin), 
     forwardPin(forwardPin), 
     backwardPin(backwardPin), 
-    pidController(setpoint, feedbackUp),
+    pidController(0, feedbackUp),
     filter(12, 30, 0.1)
 {
     pinMode(potPin, INPUT);
@@ -18,16 +18,9 @@ MotorDriver::MotorDriver(String fingerName, int potPin, int forwardPin, int back
     for (int i = 0; i < 100; i++) {
         readAndFilter();
     }
-    Serial.print(">");
-    Serial.print(name);
-    Serial.print(">potPin:");
-    Serial.println(potPin);
-    Serial.print(">forwardPin:");
-    Serial.println(forwardPin);
-    Serial.print(">backwardPin:");
-    Serial.println(backwardPin);
-    Serial.print(">setpoint:");
-    Serial.println(setpoint);
+
+    int currentEstimate = readAndFilter();
+    pidController.setSetpoint(currentEstimate);
 }
 
 void MotorDriver::begin() {
@@ -53,9 +46,9 @@ void MotorDriver::pid() {
 
 void MotorDriver::dither() {
     unsigned long t = millis(); 
-    int interval = 100;        
+    int interval = 23;        
     bool state = (t / interval) % 2 == 0;
-    double sawtoothValue = sawtooth(t, interval, 300);
+    double sawtoothValue = sawtooth(t, interval, 500);
     int pwmValue = state ? (int)sawtoothValue : -1 * (int)sawtoothValue;
     currentDither = pwmValue;
 
@@ -65,7 +58,7 @@ void MotorDriver::dither() {
 void MotorDriver::driveMotor() {
 
     currentPid = constrain(currentPid, -1023, 1023);
-    int pwmSum = currentPid;// + currentDither;
+    int pwmSum = currentPid + currentDither;
     pwmSum = constrain(pwmSum, -1023, 1023);
 
     if (pwmSum == 0) {
@@ -80,7 +73,7 @@ void MotorDriver::driveMotor() {
     }
 }
 
-void MotorDriver::calibrate()   {
+void MotorDriver::calibrateRanges()   {
     float estimate = readAndFilter();
     if (estimate < fingerMin) {
         fingerMin = estimate;
@@ -90,18 +83,43 @@ void MotorDriver::calibrate()   {
     }
 }
 
+// need to figure out how to differentiate between intentional pushing vs friction before implementing
+void MotorDriver::calibrateFeedforward() {
+    const int fwDetectionThreshold = 100;
+
+    float forwardPWM = 0;
+    int initialEstimate = readAndFilter();
+    int forwardEstimate = initialEstimate;
+    while (forwardEstimate - initialEstimate < fwDetectionThreshold) {
+        forwardPWM += 0.2f;
+        analogWrite(forwardPin, floor(forwardPWM));
+        forwardEstimate = readAndFilter();
+    }
+
+    float backwardPWM = 0;
+    initialEstimate = readAndFilter();
+    int backwardEstimate = initialEstimate;
+    while (backwardEstimate - initialEstimate < fwDetectionThreshold) {
+        backwardPWM += 0.2f;
+        analogWrite(backwardPin, floor(backwardPWM));
+        backwardEstimate = readAndFilter();
+    }
+
+    pidController.setFeedforward(floor(forwardPWM), floor(backwardPWM));
+}
+
 void MotorDriver::mapToSetpoint(float gripperValue)   {
     float setpoint = mapFloat(gripperValue, gripperMin, gripperMax, fingerMin, fingerMax);
     pidController.setSetpoint(setpoint);
 }
 
 void MotorDriver::updateSinusoidalSetpoint(int motorIndex, int motorCount) {
-    const unsigned long period = 5000;
     const float spatialSpan = 1.0;
+    const unsigned long period = 5000;
     float basePhase = (millis() % period) / float(period) * 2.0 * PI;
-  
+
     float offset = 0.0;
-    if (motorIndex == 0)    {
+    if (motorIndex != 0)    {
         offset = (motorIndex / float(motorCount - 1)) * spatialSpan * PI;
     }
 

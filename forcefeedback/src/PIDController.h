@@ -8,7 +8,12 @@ public:
     PIDController(int setpoint, bool feedbackUp);
     float getOutput(float potiValue);
     void setSetpoint(int setpoint) { this->setpoint = setpoint; }
-
+    int getSetpoint() { return setpoint; }
+    void setFeedforward(int forward, int backward) {
+        this->feedforwardPWMForward = forward;
+        this->feedforwardPWMBackward = backward;
+    }
+    
 private:
     float setpoint;
     bool feedbackUp;
@@ -20,8 +25,8 @@ private:
 
     bool active = false;
 
-    const int activationOffset = 50;
-    const int deadzone = 40;
+    const int activationOffset = 80;
+    const int deadzone = 70;
     const float derivativeDeadzone = 0.05f;
 
     float Kp = 1.4f; 
@@ -30,6 +35,10 @@ private:
     float Ki = 0.01f;               
     float integralSum = 0.0f;     
     const float integralLimit = 25000.0f; // Anti-windup limit for the integral term
+
+    const int fwActivationThresholdFromSetpoint = 50;
+    int feedforwardPWMForward = 0;
+    int feedforwardPWMBackward = 0;
 
     float error(float potiValue);
     float potiDerivative(float potiValue);

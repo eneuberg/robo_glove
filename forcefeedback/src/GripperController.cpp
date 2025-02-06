@@ -53,12 +53,12 @@ void taskRunner(void* pvParameters)
 
 // konvention: finger unten, poti value unten
 GripperController::GripperController() 
-    : index("index", 36, 2, 0, 1400, true),
-    //thumb("thumb", 35, 4, 2, 1400, true),
-    middle("middle", 39, 4, 16, 1400, true),
-    ring("ring", 34, 18, 19, 1400, true),
-    pinky("pinky", 35, 5, 17, 1400, true),
-    ditherInterval(100000),
+    : index("index", 36, 2, 0, true),
+    //thumb("thumb", 35, 4, 2, true),
+    middle("middle", 39, 4, 16, true),
+    ring("ring", 34, 18, 19, true),
+    pinky("pinky", 35, 5, 17, true),
+    ditherInterval(8),
     pidInterval(10),
     updateInterval(50)
 {}
@@ -77,6 +77,14 @@ void GripperController::begin()  {
         .taskName = "PidMotorTask"
     };
 
+    static TaskParams<MotorDriver> ditherMotorParams = {
+        .instances = motors,
+        .instanceCount = motorCount,
+        .interval = ditherInterval,
+        .callback = [](MotorDriver* md) { md->dither(); },
+        .taskName = "DitherMotorTask"
+    };
+
     static GripperController* controller[] = { this };
 
     static TaskParams<GripperController> updateParams = {
@@ -92,6 +100,16 @@ void GripperController::begin()  {
         pidMotorParams.taskName, 
         4048, 
         &pidMotorParams, 
+        1, 
+        nullptr, 
+        1 // Pin to core 1
+    );
+
+    xTaskCreatePinnedToCore(
+        taskRunner<MotorDriver>,
+        ditherMotorParams.taskName, 
+        4048, 
+        &ditherMotorParams, 
         1, 
         nullptr, 
         1 // Pin to core 1
@@ -126,6 +144,7 @@ void GripperController::update() {
     */
     float pidValues[motorCount];
 
+
     for (int i = 0; i < motorCount; i++) {
     
         motors[i]->updateSinusoidalSetpoint(i, motorCount);
@@ -143,11 +162,6 @@ void GripperController::update() {
         Serial.print(motors[i]->getName());
         Serial.print("CurrentPid: ");
         Serial.println(pidValue);
-
-        Serial.print(">");
-        Serial.print(motors[i]->getName());
-        Serial.print("CurrentSetpoint: ");
-        Serial.println(motors[i]->getSetpoint());
     }
 }
 
@@ -157,9 +171,11 @@ void GripperController::calibrate() {
     pinMode(buttonPin, INPUT_PULLUP);
     pinMode(ledPin, OUTPUT);
     digitalWrite(ledPin, HIGH);
+    // need to figure out how to differentiate between intentional pushing vs friction before implementing
+    //calibrateFeedforward();
     while (true) {
         for (int i = 0; i < motorCount; i++) {
-            motors[i]->calibrate();
+            motors[i]->calibrateRanges();
         }
         int button = digitalRead(buttonPin);
         Serial.print(">button1:");

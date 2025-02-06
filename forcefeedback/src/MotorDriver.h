@@ -8,7 +8,7 @@ typedef uint32_t msInterval;
 class MotorDriver
 {
 public:
-    MotorDriver(String fingerName, int potPin, int forwardPin, int backwardPin, int setpoint, bool feedbackUp);
+    MotorDriver(String fingerName, int potPin, int forwardPin, int backwardPin, bool feedbackUp);
 
     void begin();
     void dither();
@@ -16,7 +16,8 @@ public:
     void mapToSetpoint(float gripperValue);
     float getCurrentPid() { return currentPid; }
     String getName() { return name; }
-    void calibrate();
+    void calibrateRanges();
+    void calibrateFeedforward();
 
     int getFingerMin() { return fingerMin; }
     int getFingerMax() { return fingerMax; }
