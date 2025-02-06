@@ -138,8 +138,8 @@ void GripperController::update() {
         }
     }
 
-    index.mapToSetpoint(currentGripperValue);
-    thumb.mapToSetpoint(currentGripperValue);
+    index.mapToGripperSetpoint(currentGripperValue);
+    thumb.mapToGripperSetpoint(currentGripperValue);
     
     */
     float pidValues[motorCount];

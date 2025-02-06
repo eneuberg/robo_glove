@@ -13,7 +13,7 @@ public:
     void begin();
     void dither();
     void pid();
-    void mapToSetpoint(float gripperValue);
+    void mapToGripperSetpoint(float gripperValue);
     float getCurrentPid() { return currentPid; }
     String getName() { return name; }
     void calibrateRanges();

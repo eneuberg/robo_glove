@@ -25,13 +25,12 @@ float PIDController::getOutput(float potiValue) {
         float integral = this->Ki * integralSum;
         float pid = proportional;
 
-        // need to figure out how to differentiate between intentional pushing vs friction before implementing
-        //int feedforward = 0;
-        //if (currentError > fwActivationThresholdFromSetpoint && 
-        //    feedforward = feedforwardPWMForward;
-        //} else if (currentError < -fwActivationThresholdFromSetpoint) {
-        //    feedforward = feedforwardPWMBackward;
-        //}
+        int feedforward = 0;
+        if (currentError > fwActivationThresholdFromSetpoint) {
+            feedforward = feedforwardPWMForward;
+        } else if (currentError < -fwActivationThresholdFromSetpoint) {
+            feedforward = feedforwardPWMBackward;
+        }
 
         float output = pid; // + feedforward;
         return output;

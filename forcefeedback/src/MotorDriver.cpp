@@ -55,6 +55,7 @@ void MotorDriver::dither() {
     driveMotor();
 }
 
+// konvention: finger unten, poti value unten
 void MotorDriver::driveMotor() {
 
     currentPid = constrain(currentPid, -1023, 1023);
@@ -108,7 +109,7 @@ void MotorDriver::calibrateFeedforward() {
     pidController.setFeedforward(floor(forwardPWM), floor(backwardPWM));
 }
 
-void MotorDriver::mapToSetpoint(float gripperValue)   {
+void MotorDriver::mapToGripperSetpoint(float gripperValue)   {
     float setpoint = mapFloat(gripperValue, gripperMin, gripperMax, fingerMin, fingerMax);
     pidController.setSetpoint(setpoint);
 }
