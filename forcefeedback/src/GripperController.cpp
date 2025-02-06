@@ -53,11 +53,11 @@ void taskRunner(void* pvParameters)
 
 // konvention: finger unten, poti value unten
 GripperController::GripperController() 
-    : index("index", 36, 2, 0, true),
-    //thumb("thumb", 35, 4, 2, true),
+    : index("index", 36, 0, 2, true),
+    thumb("thumb", 32, 21, 3, true),
     middle("middle", 39, 4, 16, true),
     ring("ring", 34, 18, 19, true),
-    pinky("pinky", 35, 5, 17, true),
+    pinky("pinky", 35, 5, 17, true), // TODO switch around because of pin order on esp (conventional)
     ditherInterval(8),
     pidInterval(10),
     updateInterval(50)
@@ -147,6 +147,16 @@ void GripperController::update() {
     thumb.mapToGripperSetpoint(currentGripperValue);
     
     */
+
+   for (int i = 0; i < motorCount; i++) {
+        float estimate = motors[i]->getEstimate();
+        Serial.print(">");
+        Serial.print(motors[i]->getName());
+        Serial.print("Estimate:");
+        Serial.println(estimate);
+   }
+
+    
     bool buttonPressed = false;
     int button = digitalRead(buttonPin);
     if (button == LOW) {
@@ -156,6 +166,12 @@ void GripperController::update() {
             buttonPressed = true;
         }
     }
+
+    Serial.print(">buttonPressed:");
+    Serial.println(button);
+
+    Serial.print(">recording:");
+    Serial.println(recording);
 
     if (recording) {
         // In recording mode, push current estimates into the queues.

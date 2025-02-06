@@ -23,20 +23,21 @@ class GripperController
         int buttonPressTime = 0;
         int buttonPressDebounce = 1000;
 
-        //MotorDriver thumb;
+        MotorDriver thumb;
         MotorDriver index;
         MotorDriver middle;
         MotorDriver ring;
         MotorDriver pinky;
 
+        BitPackedQueue12 thumbRecord;
         BitPackedQueue12 indexRecord;
         BitPackedQueue12 middleRecord;
         BitPackedQueue12 ringRecord;
         BitPackedQueue12 pinkyRecord;
 
         static constexpr size_t motorCount = 4;
-        MotorDriver* motors[motorCount] = { &index, &middle, &ring, &pinky };
-        BitPackedQueue12* records[motorCount] = { &indexRecord, &middleRecord, &ringRecord, &pinkyRecord };
+        MotorDriver* motors[motorCount] = { &thumb, &index, &middle, &pinky };
+        BitPackedQueue12* records[motorCount] = { &thumbRecord, &indexRecord, &middleRecord, &pinkyRecord };
 
         msInterval ditherInterval;
         msInterval pidInterval;

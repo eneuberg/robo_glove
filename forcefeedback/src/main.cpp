@@ -4,7 +4,6 @@
 
 GripperController controller;
 
-
 void setup() {
   Serial.begin(115200);
   analogWriteResolution(10);
@@ -18,6 +17,7 @@ void setup() {
 
 void loop() 
 {
+  //Serial.println("Hello World");
   //testMotor();
   //testPoti();
 }
