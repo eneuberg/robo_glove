@@ -23,25 +23,31 @@ float FeedbackController::getOutput(float potiValue) {
         float proportional = this->Kp * currentError;
         float derivative = this->Kd * currentDerivative;
         float integral = this->Ki * integralSum;
-        float pid = proportional;
+        // TODO: derivative moving towards setpoint vs away from setpoint
+        float pid = proportional + derivative;
+
+        const float scalingFactor = 2.0f;
+        pid = pid * scalingFactor;
 
         int feedforward = 0;
         //if (currentError > fwActivationThresholdFromSetpoint) {
-        if (currentError < 0) {
+        if (currentError > 0) {
             feedforward = feedforwardPWMForward;
         //} else if (currentError < -fwActivationThresholdFromSetpoint) {
         } else {
-            feedforward = feedforwardPWMBackward;
+            feedforward = -feedforwardPWMBackward;
         }
 
-        float output = feedforward;
+        feedforward = feedforward/2;        
+        //float output = (abs(feedforward) > abs(pid)) ? feedforward : pid;
+        float output = pid;
         return output;
     }
 }
 
 bool FeedbackController::checkActivation(float potiValue, float err, float der) {
     if (this->active) {
-        if ((abs(err) < this->deadzone)) {//&& (abs(der) < this->derivativeDeadzone)) {
+        if ((abs(err) < this->deadzone) && (abs(der) < this->derivativeDeadzone)) {
             this->active = false;
         }
     }
@@ -63,8 +69,7 @@ float FeedbackController::potiDerivative(float potiValue) {
     this->lastTime = currentTime;
     
     float derivative = static_cast<float>(deltaPoti) / static_cast<float>(deltaTime);
-    float scaledDerivative = derivative * 100;
 
-    return scaledDerivative;
+    return derivative;
 }
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "PIDController.h"
+#include "FeedbackController.h"
 #include <SimpleKalmanFilter.h>
 #include "HelperFuncs.h"
 
@@ -38,7 +38,7 @@ private:
 
     float currentEstimate = 0;
 
-    PIDController pidController;
+    FeedbackController pidController;
     SimpleKalmanFilter filter;
 
     

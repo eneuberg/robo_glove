@@ -153,15 +153,15 @@ void GripperController::update() {
         float pidValue = motors[i]->getCurrentPid();
         pidValues[i] = pidValue;
 
-        Serial.print(">");
-        Serial.print(motors[i]->getName());
-        Serial.print("CurrentEstimate: ");
-        Serial.println(motors[i]->getEstimate());
-
-        Serial.print(">");
-        Serial.print(motors[i]->getName());
-        Serial.print("CurrentPid: ");
-        Serial.println(pidValue);
+        //Serial.print(">");
+        //Serial.print(motors[i]->getName());
+        //Serial.print("CurrentEstimate: ");
+        //Serial.println(motors[i]->getEstimate());
+//
+        //Serial.print(">");
+        //Serial.print(motors[i]->getName());
+        //Serial.print("CurrentPid: ");
+        //Serial.println(pidValue);
     }
 }
 
@@ -171,8 +171,19 @@ void GripperController::calibrate() {
     pinMode(buttonPin, INPUT_PULLUP);
     pinMode(ledPin, OUTPUT);
     digitalWrite(ledPin, HIGH);
-    // need to figure out how to differentiate between intentional pushing vs friction before implementing
-    //calibrateFeedforward();
+
+    //int button = digitalRead(buttonPin);
+    //while (button == HIGH) {
+    //    button = digitalRead(buttonPin);
+    //    delay(100);
+    //}
+    //digitalWrite(ledPin, LOW);
+    //delay(500);
+    //digitalWrite(ledPin, HIGH);
+    //for (int i = 0; i < motorCount; i++) {
+    //    //motors[i]->calibrateFeedforward();
+    //}
+//
     while (true) {
         for (int i = 0; i < motorCount; i++) {
             motors[i]->calibrateRanges();

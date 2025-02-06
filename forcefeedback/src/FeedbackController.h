@@ -30,7 +30,7 @@ private:
     const float derivativeDeadzone = 0.05f;
 
     float Kp = 1.4f; 
-    float Kd = 1.0f; 
+    float Kd = 100.0f; 
 
     float Ki = 0.01f;               
     float integralSum = 0.0f;     

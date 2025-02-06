@@ -17,6 +17,7 @@ MotorDriver::MotorDriver(String fingerName, int potPin, int forwardPin, int back
 
     for (int i = 0; i < 100; i++) {
         readAndFilter();
+        delay(1);
     }
 
     int currentEstimate = readAndFilter();
@@ -29,17 +30,14 @@ void MotorDriver::begin() {
 
 float MotorDriver::readAndFilter() {
     int potiValue = analogRead(potPin);
-    int currentTick = micros();
     float estimate = filter.updateEstimate(potiValue);
     currentEstimate = estimate;
-    return potiValue;
+    return estimate;
 }
 
 void MotorDriver::pid() {
     float estimate = readAndFilter();
-    float pidOutput = pidController.getOutput(estimate);
-    float factor = 2.0f;
-    currentPid = (int)(pidOutput * factor); 
+    currentPid = pidController.getOutput(estimate);
 
     driveMotor();
 }
@@ -48,7 +46,7 @@ void MotorDriver::dither() {
     unsigned long t = millis(); 
     int interval = 23;        
     bool state = (t / interval) % 2 == 0;
-    double sawtoothValue = sawtooth(t, interval, 500);
+    double sawtoothValue = sawtooth(t, interval, 450);
     int pwmValue = state ? (int)sawtoothValue : -1 * (int)sawtoothValue;
     currentDither = pwmValue;
 
@@ -86,26 +84,39 @@ void MotorDriver::calibrateRanges()   {
 
 // need to figure out how to differentiate between intentional pushing vs friction before implementing
 void MotorDriver::calibrateFeedforward() {
-    const int fwDetectionThreshold = 100;
+    const int fwDetectionThreshold = 70;
+    const float increment = 0.1f;
 
-    float forwardPWM = 0;
+    float forwardPWM = 80;
     int initialEstimate = readAndFilter();
     int forwardEstimate = initialEstimate;
-    while (forwardEstimate - initialEstimate < fwDetectionThreshold) {
-        forwardPWM += 0.2f;
+    while (forwardEstimate - initialEstimate > -fwDetectionThreshold) {
+        forwardPWM += increment;
         analogWrite(forwardPin, floor(forwardPWM));
         forwardEstimate = readAndFilter();
+        delay(1);
     }
+    analogWrite(forwardPin, 0);
+    delay(250);
 
-    float backwardPWM = 0;
+    float backwardPWM = 80;
     initialEstimate = readAndFilter();
     int backwardEstimate = initialEstimate;
     while (backwardEstimate - initialEstimate < fwDetectionThreshold) {
-        backwardPWM += 0.2f;
+        backwardPWM += increment;
         analogWrite(backwardPin, floor(backwardPWM));
         backwardEstimate = readAndFilter();
+        delay(1);
     }
-
+    analogWrite(backwardPin, 0);
+    Serial.print(">");
+    Serial.print(name);
+    Serial.print("ForwardPWM:");
+    Serial.println(forwardPWM);
+    Serial.print(">");
+    Serial.print(name);
+    Serial.print("BackwardPWM:");
+    Serial.println(backwardPWM);
     pidController.setFeedforward(floor(forwardPWM), floor(backwardPWM));
 }
 
