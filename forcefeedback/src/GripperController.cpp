@@ -67,7 +67,12 @@ void GripperController::begin()  {
     
     for (int i = 0; i < motorCount; i++) {
         motors[i]->begin();
+        motors[i]->setPidActive(false);
     }
+
+    pinMode(recordingLedPin, OUTPUT);
+    recording = true;
+    digitalWrite(recordingLedPin, HIGH);
 
     static TaskParams<MotorDriver> pidMotorParams = {
         .instances = motors,
@@ -142,31 +147,77 @@ void GripperController::update() {
     thumb.mapToGripperSetpoint(currentGripperValue);
     
     */
-    float pidValues[motorCount];
+    bool buttonPressed = false;
+    int button = digitalRead(buttonPin);
+    if (button == LOW) {
+        int time = millis();
+        if (time - buttonPressTime > buttonPressDebounce) {
+            buttonPressTime = time;
+            buttonPressed = true;
+        }
+    }
 
-
-    for (int i = 0; i < motorCount; i++) {
-    
-        motors[i]->updateSinusoidalSetpoint(i, motorCount);
-
-        // Store or log the PID value if needed.
-        float pidValue = motors[i]->getCurrentPid();
-        pidValues[i] = pidValue;
-
-        //Serial.print(">");
-        //Serial.print(motors[i]->getName());
-        //Serial.print("CurrentEstimate: ");
-        //Serial.println(motors[i]->getEstimate());
-//
-        //Serial.print(">");
-        //Serial.print(motors[i]->getName());
-        //Serial.print("CurrentPid: ");
-        //Serial.println(pidValue);
+    if (recording) {
+        // In recording mode, push current estimates into the queues.
+        // Also, check if any of the queues is full OR the button was pressed.
+        bool stopRecording = false;
+        for (int i = 0; i < motorCount; i++) {
+            // If any record queue is full, mark that we should stop recording.
+            if (records[i]->full()) {
+                stopRecording = true;
+                break;
+            }
+        }
+        // If the button is pressed (or any queue was full), we want to stop recording.
+        if (buttonPressed || stopRecording) {
+            digitalWrite(recordingLedPin, LOW);
+            recording = false;
+            for (int i = 0; i < motorCount; i++) {
+                motors[i]->setPidActive(true);
+            }
+            // Optionally, print a message or perform additional actions.
+            Serial.println("Recording stopped.");
+        }
+        else {
+            // Otherwise, push the current estimate for each motor.
+            for (int i = 0; i < motorCount; i++) {
+                uint16_t sample = static_cast<uint16_t>(motors[i]->getEstimate());
+                if (!records[i]->push(sample)) {
+                    Serial.print(">");
+                    Serial.print(motors[i]->getName());
+                    Serial.println(" ERROR: push failed in UpdateTask!");
+                }
+            }
+        }
+    }
+    else {
+        // In playback mode, pop values from the queues and set motor setpoints.
+        for (int i = 0; i < motorCount; i++) {
+            uint16_t outVal;
+            if (records[i]->pop(outVal)) {
+                motors[i]->setSetpoint(static_cast<int>(outVal));
+            }
+        }
+        
+        // --- Missing Part: Check if we need to restart recording ---
+        // If the button is pressed while not recording, clear all queues and restart recording.
+        if (buttonPressed) {
+            // Clear all queues.
+            for (int i = 0; i < motorCount; i++) {
+                records[i]->clear(); // Assuming a clear() method exists.
+            }
+            // Optionally, light up the LED to indicate recording has started.
+            digitalWrite(recordingLedPin, HIGH);
+            recording = true;
+            for (int i = 0; i < motorCount; i++) {
+                motors[i]->setPidActive(false);
+            }
+            Serial.println("Recording restarted.");
+        }
     }
 }
 
 void GripperController::calibrate() {
-    int buttonPin = 14;
     int ledPin = 12;
     pinMode(buttonPin, INPUT_PULLUP);
     pinMode(ledPin, OUTPUT);

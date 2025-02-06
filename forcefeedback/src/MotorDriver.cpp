@@ -57,7 +57,7 @@ void MotorDriver::dither() {
 void MotorDriver::driveMotor() {
 
     currentPid = constrain(currentPid, -1023, 1023);
-    int pwmSum = currentPid + currentDither;
+    int pwmSum = pidActive ? currentPid + currentDither : currentDither;
     pwmSum = constrain(pwmSum, -1023, 1023);
 
     if (pwmSum == 0) {

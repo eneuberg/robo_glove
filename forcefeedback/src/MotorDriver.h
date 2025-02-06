@@ -24,9 +24,13 @@ public:
     float getEstimate() { return currentEstimate; }
     int getSetpoint() { return pidController.getSetpoint(); }
     
+    void setSetpoint(int setpoint) { pidController.setSetpoint(setpoint); }
     void updateSinusoidalSetpoint(int motorIndex, int motorCount);
-
+    void setPidActive(bool active) { pidActive = active; }
+    
 private:
+    bool pidActive = true;
+
     String name;
 
     int potPin;
