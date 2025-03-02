@@ -16,8 +16,6 @@ class GripperController
 
     private:
         int buttonPin = 14;
-        int buttonPressTime = 0;
-        int buttonPressDebounce = 1000;
 
         MotorDriver thumb;
         MotorDriver index;
