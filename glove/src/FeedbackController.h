@@ -8,7 +8,6 @@ public:
     FeedbackController(int setpoint, bool feedbackUp);
     float getOutput(float potiValue);
     void setSetpoint(int setpoint) { this->setpoint = setpoint; }
-    int getSetpoint() { return setpoint; }
     
 private:
     float setpoint;

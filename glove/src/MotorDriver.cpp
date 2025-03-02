@@ -31,7 +31,6 @@ void MotorDriver::begin() {
 float MotorDriver::readAndFilter() {
     int potiValue = analogRead(potPin);
     float estimate = filter.updateEstimate(potiValue);
-    currentEstimate = estimate;
     return estimate;
 }
 
@@ -57,7 +56,7 @@ void MotorDriver::dither() {
 void MotorDriver::driveMotor() {
 
     currentPid = constrain(currentPid, -1023, 1023);
-    int pwmSum = pidActive ? currentPid + currentDither : currentDither;
+    int pwmSum = currentPid + currentDither;
     pwmSum = constrain(pwmSum, -1023, 1023);
 
     if (pwmSum == 0) {

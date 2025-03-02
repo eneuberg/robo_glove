@@ -10,14 +10,11 @@ void setup() {
   while(!Serial) {
         delay(100);
     }
-    //testBitPackedQueue12();
   controller.calibrate();
   controller.begin();
 }
 
 void loop() 
 {
-  //Serial.println("Hello World");
-  //testMotor();
-  //testPoti();
+
 }

@@ -2,7 +2,6 @@
 
 #include <Arduino.h>
 #include "MotorDriver.h"
-#include "BitPackedQueue12.h"
 #include <functional>
 
 typedef uint32_t msInterval;
@@ -16,9 +15,6 @@ class GripperController
         void calibrate();
 
     private:
-        bool recording = false;
-        int recordingLedPin = 27;
-
         int buttonPin = 14;
         int buttonPressTime = 0;
         int buttonPressDebounce = 1000;
@@ -29,15 +25,8 @@ class GripperController
         MotorDriver ring;
         MotorDriver pinky;
 
-        BitPackedQueue12 thumbRecord;
-        BitPackedQueue12 indexRecord;
-        BitPackedQueue12 middleRecord;
-        BitPackedQueue12 ringRecord;
-        BitPackedQueue12 pinkyRecord;
-
-        static constexpr size_t motorCount = 4;
-        MotorDriver* motors[motorCount] = { &thumb, &index, &middle, &pinky };
-        BitPackedQueue12* records[motorCount] = { &thumbRecord, &indexRecord, &middleRecord, &pinkyRecord };
+        static constexpr size_t motorCount = 5;
+        MotorDriver* motors[motorCount] = { &thumb, &index, &middle, &ring, &pinky };
 
         msInterval ditherInterval;
         msInterval pidInterval;
