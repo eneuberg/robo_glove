@@ -42,14 +42,34 @@ def main():
             while True:
                 currentForce = 0
                 line = read_data_line(ser)
-                if line is not None and line.startswith(">currentPid:"):
-                    print(line)
-                    output = float(line.split(":")[1])
-                    currentForce = map_output_to_force(output)
-                
+                if line is not None and line.startswith(">"):
+                    print("Received:", line)
+                    # Remove the leading '>' and any trailing commas or whitespace
+                    cleaned_line = line.lstrip('>').rstrip(',')
+                    pid_values = []
+                    # Split by comma to separate each "name:pid" pair
+                    for token in cleaned_line.split(','):
+                        token = token.strip()
+                        if token:
+                            parts = token.split(':')
+                            if len(parts) == 2:
+                                try:
+                                    pid = float(parts[1])
+                                    pid_values.append(pid)
+                                except ValueError:
+                                    # If conversion fails, skip the token
+                                    continue
+                    if pid_values:
+                        average_pid = sum(pid_values) / len(pid_values)
+                        currentForce = map_output_to_force(average_pid)
+                        print("Average PID:", average_pid)
+                    else:
+                        print("No valid PID values found.")
+
+                # Read the current width from the hubbie device
                 currentWidth = hubbie.read_2FG_width()
                 send_data(ser, currentWidth)
-                hubbie.set_2FG_gripperwidth(currentWidth+currentForce)
+                hubbie.set_2FG_gripperwidth(currentWidth + currentForce)
 
                 print(f"Force: {currentForce} - Sent: {currentWidth}")
                 time.sleep(send_delay_ms / 1000.0)
