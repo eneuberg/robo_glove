@@ -82,49 +82,12 @@ void MotorDriver::calibrateRanges()   {
     }
 }
 
-// need to figure out how to differentiate between intentional pushing vs friction before implementing
-void MotorDriver::calibrateFeedforward() {
-    const int fwDetectionThreshold = 70;
-    const float increment = 0.1f;
-
-    float forwardPWM = 80;
-    int initialEstimate = readAndFilter();
-    int forwardEstimate = initialEstimate;
-    while (forwardEstimate - initialEstimate > -fwDetectionThreshold) {
-        forwardPWM += increment;
-        analogWrite(forwardPin, floor(forwardPWM));
-        forwardEstimate = readAndFilter();
-        delay(1);
-    }
-    analogWrite(forwardPin, 0);
-    delay(250);
-
-    float backwardPWM = 80;
-    initialEstimate = readAndFilter();
-    int backwardEstimate = initialEstimate;
-    while (backwardEstimate - initialEstimate < fwDetectionThreshold) {
-        backwardPWM += increment;
-        analogWrite(backwardPin, floor(backwardPWM));
-        backwardEstimate = readAndFilter();
-        delay(1);
-    }
-    analogWrite(backwardPin, 0);
-    Serial.print(">");
-    Serial.print(name);
-    Serial.print("ForwardPWM:");
-    Serial.println(forwardPWM);
-    Serial.print(">");
-    Serial.print(name);
-    Serial.print("BackwardPWM:");
-    Serial.println(backwardPWM);
-    pidController.setFeedforward(floor(forwardPWM), floor(backwardPWM));
-}
-
 void MotorDriver::mapToGripperSetpoint(float gripperValue)   {
     float setpoint = mapFloat(gripperValue, gripperMin, gripperMax, fingerMin, fingerMax);
     pidController.setSetpoint(setpoint);
 }
 
+// function for testing purposes
 void MotorDriver::updateSinusoidalSetpoint(int motorIndex, int motorCount) {
     const float spatialSpan = 1.0;
     const unsigned long period = 5000;

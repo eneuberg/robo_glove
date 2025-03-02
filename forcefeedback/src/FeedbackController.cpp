@@ -29,17 +29,6 @@ float FeedbackController::getOutput(float potiValue) {
         const float scalingFactor = 2.0f;
         pid = pid * scalingFactor;
 
-        int feedforward = 0;
-        //if (currentError > fwActivationThresholdFromSetpoint) {
-        if (currentError > 0) {
-            feedforward = feedforwardPWMForward;
-        //} else if (currentError < -fwActivationThresholdFromSetpoint) {
-        } else {
-            feedforward = -feedforwardPWMBackward;
-        }
-
-        feedforward = feedforward/2;        
-        //float output = (abs(feedforward) > abs(pid)) ? feedforward : pid;
         float output = pid;
         return output;
     }

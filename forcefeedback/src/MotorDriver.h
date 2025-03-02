@@ -17,7 +17,6 @@ public:
     float getCurrentPid() { return currentPid; }
     String getName() { return name; }
     void calibrateRanges();
-    void calibrateFeedforward();
 
     int getFingerMin() { return fingerMin; }
     int getFingerMax() { return fingerMax; }

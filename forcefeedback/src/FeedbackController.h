@@ -9,10 +9,6 @@ public:
     float getOutput(float potiValue);
     void setSetpoint(int setpoint) { this->setpoint = setpoint; }
     int getSetpoint() { return setpoint; }
-    void setFeedforward(int forward, int backward) {
-        this->feedforwardPWMForward = forward;
-        this->feedforwardPWMBackward = backward;
-    }
     
 private:
     float setpoint;
@@ -36,9 +32,6 @@ private:
     float integralSum = 0.0f;     
     const float integralLimit = 25000.0f; // Anti-windup limit for the integral term
 
-    //const int fwActivationThresholdFromSetpoint = 50;
-    int feedforwardPWMForward = 0;
-    int feedforwardPWMBackward = 0;
 
     float error(float potiValue);
     float potiDerivative(float potiValue);
