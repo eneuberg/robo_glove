@@ -1,3 +1,9 @@
+"""
+Copright: Yuvesh Aubeeluck
+Cologne UAS
+"""
+
+
 from rtde_receive import RTDEReceiveInterface
 from rtde_io import RTDEIOInterface
 from rtde_control import RTDEControlInterface
